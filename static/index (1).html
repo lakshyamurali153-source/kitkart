@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KitKart</title>
+<style>
+:root{--bg:#f4f6fd;--card:#fff;--tx:#1b2140;--mut:#6b7194;--pri:#4057c9;--ln:#d5dcf5;--ok:#e3f5ea;--okl:#7fbf95;--bad:#fdebe7;--badl:#e8a396;--warn:#e8735a}
+@media(prefers-color-scheme:dark){:root{--bg:#12152a;--card:#1c2040;--tx:#eceffd;--mut:#9aa1cc;--ln:#323867;--ok:#183a2a;--bad:#3d2321}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.45 system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;background:var(--pri);color:#fff}
+h1{margin:0;font-size:20px}h2{margin:4px 0 12px}h3{margin:12px 0 6px}nav{display:flex;gap:6px;flex:1}
+nav button{background:rgba(255,255,255,.15);color:#fff;border:0;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:15px}
+nav button.on{background:#fff;color:var(--pri);font-weight:600}header label{font-size:14px}
+.ghost{background:transparent;color:#fff;border:1px solid #fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+main{max-width:900px;margin:0 auto;padding:16px}section[hidden]{display:none}
+.chip{background:var(--card);color:var(--tx);border:1px solid var(--ln);padding:7px 12px;border-radius:20px;margin:0 6px 8px 0;cursor:pointer}
+.up{display:inline-block;margin:6px 0;padding:8px 12px;border:1px dashed var(--pri);border-radius:10px;cursor:pointer;color:var(--pri)}
+.card,.box{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--ln);background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.box{display:block}.card.ok{background:var(--ok);border-color:var(--okl)}.card.bad{background:var(--bad);border-color:var(--badl)}
+.r{text-align:right}.mut{color:var(--mut);font-size:14px}.tok{font-size:28px;letter-spacing:4px;margin:4px 0}
+button.pri,button.warn{border:0;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:6px}
+button.pri{background:var(--pri)}button.warn{background:var(--warn)}
+input,select{padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--card);color:var(--tx);font-size:15px;margin:4px 6px 4px 0;max-width:100%}
+.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--ln)}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}.k{flex:1;min-width:130px;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--mut)}
+.k b{display:block;font-size:24px;color:var(--tx)}.redk{background:var(--bad);border-color:var(--badl)}
+.alert{background:var(--bad);border:1px solid var(--badl);padding:8px 12px;border-radius:8px;margin:6px 0;font-weight:600}
+.okmsg{background:var(--ok);border:1px solid var(--okl);padding:8px 12px;border-radius:8px}
+table{width:100%;border-collapse:collapse;background:var(--card)}th,td{padding:7px 10px;border-bottom:1px solid var(--ln);text-align:left}tr.flag td{background:var(--bad);font-weight:600}
+[hidden]{display:none!important}
+</style></head><body>
+<header><h1>KitKart</h1>
+<nav><button data-t="shopper">Shopper</button><button data-t="counter">Smart counter</button><button data-t="owner">Owner</button></nav>
+<label id="shl">Shop <select id="sh"></select></label><button class="ghost" id="rs">Reset demo</button></header>
+<main>
+<div id="lock" class="box" hidden><h3>Staff login</h3><p class="mut">Only the shop staff can use the counter and dashboard. Demo PIN: 1234 (set OWNER_PIN to change it).</p><input id="pin" type="password" placeholder="PIN"><button class="pri" id="lg">Login</button> <span id="lm" class="mut"></span></div>
+<section id="shopper"><h2>Tell us what you need</h2>
+<div class="box"><input id="need" style="width:100%" placeholder="e.g. fix a leaking tap, or 2 washers, 5 m wire, 1 MCB"><br>
+<button class="pri" id="fb">Find nearby shops</button>
+<label class="up">📷 Or upload a photo of the broken part (AI)<input type="file" id="photo" accept="image/*" hidden></label>
+<div id="msg" class="mut"></div></div>
+<div id="jobs"></div><div id="conf"></div><div id="res"></div>
+<div class="box"><h3>Doesn't fit? Return or exchange</h3><p class="mut">Within 7 days of collecting. Bring the item and your QR to the shop.</p>
+<input id="rtok" placeholder="Your token or QR text"><select id="rwhy"><option>Wrong size</option><option>Does not fit</option><option>Wrong part</option><option>Faulty</option></select><button class="pri" id="rb">Request return</button><div id="rm"></div></div></section>
+
+<section id="counter" hidden><h2>Smart counter</h2>
+<div class="box"><h3>1. Measure and bill loose items</h3><select id="it"></select><br><span id="rl" class="mut"></span><br>
+<input id="rd" type="number" min="0" step="any" placeholder="Reading"><br><button class="pri" id="ab">Add to bill</button><div id="bill"></div></div>
+<div class="box"><h3>2. Hand over a reserved order</h3><input id="tok" placeholder="Scan the QR, or type the token"><button class="pri" id="hb">Scan token and hand over</button><div id="hm"></div></div>
+<div class="box"><h3>2b. Returns and exchanges</h3><input id="ctok" placeholder="Token or QR text"><select id="cmode"><option value="refund">Refund</option><option value="exchange">Exchange</option></select><button class="pri" id="cb">Accept return</button><div id="cm"></div></div>
+<div class="box"><h3>3. Demo only: imitate the shop floor</h3><p class="mut">In a real shop nobody types a loss. A customer walks off with an item, the shelf sensor sees the weight drop, and the app finds it by itself. The ESP32 would call the same /api/sensor endpoint.</p>
+<select id="it2"></select><input id="q2" type="number" min="1" value="1"><button class="warn" id="lb">Customer takes it (no bill)</button><div id="auto"></div></div></section>
+
+<section id="owner" hidden><h2>Owner dashboard <span class="mut">(live)</span></h2><div id="kpi" class="kpis"></div><div id="al"></div>
+<table><thead><tr><th>Item</th><th>Actual</th><th>Expected</th><th>Missing</th></tr></thead><tbody id="tb"></tbody></table><h3>Recent sales</h3><div id="log"></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const api=async(p,b)=>{const r=await fetch(p,b?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}:{});
+ if(r.status==401){STAFF=false;tab(CUR);return {error:"Please login first"}}return r.json()};
+let ITEMS=[],SHOP="s1",BILL=[],KIT=null,TITLE="",TIMER=null,STAFF=false,CUR="shopper";
+const Q=(it,q)=>q+(it.unit=="m"?" m of ":" × ")+it.name;
+
+async function boot(){
+ STAFF=(await api("/api/me")).staff;ITEMS=await api("/api/items");const shops=await api("/api/shops");
+ $("sh").innerHTML=shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");SHOP=$("sh").value;
+ const o=ITEMS.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join("");$("it").innerHTML=o;$("it2").innerHTML=o;
+ const jobs=await api("/api/jobs");$("jobs").innerHTML='<span class="mut">Try: </span>'+jobs.map(j=>`<button class="chip">${esc(j)}</button>`).join("");
+ document.querySelectorAll("#jobs .chip").forEach(b=>b.onclick=()=>{$("need").value=b.textContent;find()});
+ hint();bills();tab("shopper")}
+function tab(t){CUR=t;const lock=(t=="counter"||t=="owner")&&!STAFF;
+ document.querySelectorAll("section").forEach(s=>s.hidden=s.id!==t||lock);$("lock").hidden=!lock;
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==t));$("shl").hidden=t=="shopper";
+ clearInterval(TIMER);if(t=="owner"&&STAFF){dash();TIMER=setInterval(dash,3000)}}
+$("lg").onclick=async()=>{const r=await api("/api/login",{pin:$("pin").value});if(r.error){$("lm").textContent=r.error;return}STAFF=true;$("pin").value="";$("lm").textContent="";tab(CUR)};
+$("pin").onkeydown=e=>{if(e.key=="Enter")$("lg").click()};
+
+// ---- shopper ----
+function show(r){if(r.error){KIT=null;$("msg").textContent=r.error;$("res").innerHTML="";return}
+ KIT={};r.kit.forEach(k=>KIT[k.id]=k.qty);TITLE=r.title;$("conf").innerHTML="";
+ $("msg").textContent="Showing shops for: "+r.title+(r.note?" — "+r.note+". Not right? Type what you need and search again.":"");
+ $("res").innerHTML="<h3>Your kit</h3><ul>"+r.kit.map(k=>`<li>${esc(Q(k,k.qty))}</li>`).join("")+"</ul><h3>Nearby shops</h3>"+
+ r.shops.map(s=>`<div class="card ${s.complete?"ok":"bad"}"><div><b>${esc(s.name)}</b> <span class="mut">${s.km} km</span><br>${s.complete?"✔ Has the complete kit":"Missing: "+esc(s.missing.join(", "))}</div>
+ <div class="r"><b>₹${s.total}</b><br>${s.complete?`<button class="pri" onclick="pay('${s.id}')">Pay by UPI &amp; reserve</button><br><button class="chip" onclick="reserve('${s.id}')">Reserve, pay at shop</button>`:""}</div></div>`).join("")}
+async function find(){const t=$("need").value.trim();if(!t)return;$("msg").textContent="Searching...";show(await api("/api/search",{text:t}))}
+const loadRzp=()=>window.Razorpay?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://checkout.razorpay.com/v1/checkout.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+function done(r){if(r.error){alert(r.error);return}
+ $("conf").innerHTML=`<div class="card ok"><div><b>${esc(r.paid)}</b><br>Show this QR at the shop (token <b>${esc(r.token)}</b>):<br><img src="${r.qr}" width="170" alt="QR code"></div></div>`;
+ $("conf").scrollIntoView({behavior:"smooth"})}
+async function reserve(id){const r=await api("/api/reserve",{shop_id:id,kit:KIT,title:TITLE});if(r.error){alert(r.error);return}
+ $("conf").innerHTML=`<div class="card ok"><div><b>Reserved. Check that it fits, then pay at the shop.</b><br>Show this QR at the shop (token <b>${esc(r.token)}</b>):<br><img src="${r.qr}" width="170" alt="QR code"></div></div>`;$("conf").scrollIntoView({behavior:"smooth"})}
+$("rb").onclick=async()=>{const r=await api("/api/return/request",{token:$("rtok").value,reason:$("rwhy").value});$("rm").textContent=r.error?"❌ "+r.error:"✅ "+r.ok};
+$("cb").onclick=async()=>{const r=await api("/api/return",{shop_id:SHOP,token:$("ctok").value,mode:$("cmode").value});$("cm").textContent=r.error?"❌ "+r.error:"✅ "+r.ok;if(!r.error)$("ctok").value=""};
+function mockCheckout(r){const m=document.createElement("div");
+ m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50";
+ m.innerHTML=`<div class="box" style="max-width:380px;width:92%;margin:0"><h3>KitKart Test Gateway</h3><p class="mut">Fake payment for development. No real money moves.</p><b>Pay ₹${r.amount} by UPI</b><br><input id="mv" style="width:100%" value="success@test" placeholder="UPI ID, e.g. success@test"><br><span class="mut">success@test pays, failure@test fails</span><br><button class="pri" id="mgo">Pay</button> <button class="chip" id="mno">Cancel</button><div id="mer"></div></div>`;
+ document.body.appendChild(m);$("mno").onclick=()=>m.remove();
+ $("mgo").onclick=async()=>{const g=await api("/mock/pay",{order_id:r.razorpay.order_id,upi_id:$("mv").value});
+  if(g.error){$("mer").textContent="❌ "+g.error;return}
+  m.remove();done(await api("/api/pay/verify",{token:r.token,razorpay_payment_id:g.payment_id,razorpay_signature:g.signature}))}}
+function showUpi(r){const u=r.upi;
+ $("conf").innerHTML=`<div class="card ok"><div><b>Pay ₹${u.amount} by UPI</b><br><span class="mut">Scan with any UPI app (GPay, PhonePe, Paytm), or on a phone tap the button.</span><br><img src="${u.qr}" width="190" alt="UPI QR"><br><a class="chip" href="${esc(u.link)}">Open UPI app</a><br>UTR, 12 digits (optional): <input id="utr" placeholder="e.g. 412345678901" maxlength="14"><br><button class="pri" id="paid">I have paid</button><div class="mut">Paying to ${esc(u.payee)}</div></div></div>`;
+ $("paid").onclick=async()=>done(await api("/api/pay/claim",{token:r.token,utr:$("utr").value}));$("conf").scrollIntoView({behavior:"smooth"})}
+async function pay(id){const r=await api("/api/order",{shop_id:id,kit:KIT,title:TITLE});if(r.error){alert(r.error);return}
+ if(r.razorpay&&r.razorpay.mock)return mockCheckout(r);
+ if(r.upi)return showUpi(r);
+ if(!r.razorpay)return done(await api("/api/pay/demo",{token:r.token}));
+ try{await loadRzp()}catch(x){alert("Could not load the payment window");return}
+ new Razorpay({key:r.razorpay.key_id,amount:r.razorpay.amount,currency:"INR",name:"KitKart",description:TITLE,order_id:r.razorpay.order_id,
+  handler:async resp=>done(await api("/api/pay/verify",{token:r.token,...resp})),theme:{color:"#4057c9"}}).open()}
+$("photo").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+ $("msg").textContent="🔍 AI is looking at your photo...";const fd=new FormData();fd.append("image",f);fd.append("text",$("need").value);
+ try{show(await (await fetch("/api/photo",{method:"POST",body:fd})).json())}catch(x){$("msg").textContent="Photo upload failed. Please type what you need."}};
+
+// ---- counter ----
+function hint(){const i=ITEMS.find(x=>x.id==$("it").value);if(!i)return;$("rl").textContent=i.by_weight?"Weight on scale (grams), counted by weight":i.unit=="m"?"Length measured (metres)":"Count (pieces)"}
+function bills(){$("bill").innerHTML=BILL.length?BILL.map(b=>`<div class="row"><span>${esc(b.label)}</span></div>`).join("")+'<button class="pri" id="sell">Complete sale</button>':"<p class='mut'>Bill is empty.</p>";
+ if(BILL.length)$("sell").onclick=async()=>{const r=await api("/api/bill",{shop_id:SHOP,lines:BILL});alert(r.error||r.ok);if(!r.error){BILL=[];bills()}}}
+$("ab").onclick=()=>{const i=ITEMS.find(x=>x.id==$("it").value),v=+$("rd").value;if(v<=0)return;
+ BILL.push({item_id:i.id,reading:v,label:`${i.name}: ${v}${i.by_weight?" g":i.unit=="m"?" m":" pcs"}`});$("rd").value="";bills()};
+$("tok").onkeydown=e=>{if(e.key=="Enter")$("hb").click()};
+$("hb").onclick=async()=>{let r=await api("/api/handover",{shop_id:SHOP,token:$("tok").value});
+ if(r.confirm){if(!confirm(r.confirm)){$("hm").textContent="Cancelled";return}r=await api("/api/handover",{shop_id:SHOP,token:$("tok").value,confirm:true})}
+ $("hm").textContent=r.error?"❌ "+r.error:"✅ "+r.ok;if(!r.error)$("tok").value=""};
+$("lb").onclick=async()=>{const r=await api("/api/sensor",{shop_id:SHOP,item_id:$("it2").value,removed:+$("q2").value||1});
+ $("auto").innerHTML=r.error?esc(r.error):r.alert?`<div class="alert">🚨 ${esc(r.alert)}</div>`:"";$("q2").value=1};
+
+// ---- owner ----
+async function dash(){const d=await api("/api/dashboard?shop_id="+SHOP);if(d.error)return;
+ $("kpi").innerHTML=`<div class="k"><b>₹${d.sold}</b>Billed sales</div><div class="k ${d.loss?"redk":""}"><b>₹${d.loss}</b>Hidden loss</div><div class="k"><b>${d.low}</b>Low stock items</div>`;
+ $("al").innerHTML=d.alerts.length?d.alerts.map(a=>`<div class="alert">⚠ ${esc(a)}</div>`).join(""):"<div class='okmsg'>✔ Stock matches billing. No hidden losses.</div>";
+ $("tb").innerHTML=d.rows.map(r=>`<tr class="${r.missing>0?"flag":""}"><td>${esc(r.name)}</td><td>${r.actual}</td><td>${r.expected}</td><td>${r.missing>0?r.missing:"–"}</td></tr>`).join("");
+ $("log").innerHTML=d.log.map(x=>`<div class="row"><span>${x.qty} × ${esc(x.name)}</span><span>₹${Math.round(x.amount)}</span></div>`).join("")||"<p class='mut'>No sales yet.</p>"}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+$("sh").onchange=e=>{SHOP=e.target.value;BILL=[];bills();if(!$("owner").hidden)dash()};
+$("it").onchange=hint;$("fb").onclick=find;$("need").onkeydown=e=>{if(e.key=="Enter")find()};
+$("rs").onclick=async()=>{if(!STAFF){alert("Login on the Counter tab first");return}await api("/api/reset",{});BILL=[];KIT=null;$("res").innerHTML="";$("conf").innerHTML="";$("msg").textContent="";$("need").value="";bills();tab("shopper")};
+boot();
+</script></body></html>
